@@ -11,7 +11,10 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::orderBy('id', 'DESC')->paginate(5);
-        return response()->json(['message' => 'Success', 'data' => $posts]);
+        return response()->json([
+            'message' => 'Success', 
+            'data' => $posts
+        ]);
     }
 
     public function show($id)
@@ -44,35 +47,54 @@ class PostController extends Controller
 
     public function update(Request $request, $id)
     {
-        $post = Post::find($id);
-
-        if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
-
         $validator = Validator::make($request->all(), [
-            'title' => 'required|max:255',
+            'title'   => 'required',
             'content' => 'required',
         ]);
-
+    
         if ($validator->fails()) {
-            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Semua Kolom Wajib Diisi!',
+                'data'   => $validator->errors()
+            ],401);
+    
+        } else {
+    
+            $post = Post::whereId($id)->update([
+                'title'     => $request->input('title'),
+                'content'   => $request->input('content'),
+            ]);
+    
+            if ($post) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Post Berhasil Diupdate!',
+                    'data' => $post
+                ], 201);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Post Gagal Diupdate!',
+                ], 400);
+            }
+    
         }
-
-        $post->update($request->all());
-        return response()->json(['message' => 'Post updated successfully', 'data' => $post]);
     }
 
     public function destroy($id)
     {
-        $post = Post::find($id);
-
-        if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
-
+        $post = Post::whereId($id)->first();
+		
         $post->delete();
-        return response()->json(['message' => 'Post deleted successfully'], 204);
+
+            if ($post) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Post Berhasil Dihapus!',
+                ], 200);
+            }
     }
 }
 
