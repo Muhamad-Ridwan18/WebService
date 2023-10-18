@@ -19,7 +19,11 @@ class TagController extends Controller
 
     public function index ()
     {
-        $tags = Tag::all();
-        return response()->json($tags);
+        $tags = Tag::orderBy('name', 'DESC')->paginate(10);
+        return response()->json([
+            'success' => true,
+            'message' =>'List Semua Tag',
+            'data'    => $tags
+        ], 200);
     }
 }

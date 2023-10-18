@@ -19,7 +19,11 @@ class CommentController extends Controller
 
     public function index ()
     {
-        $comments = Comment::all();
-        return response()->json($comments);
+        $comments = Comment::orderBy('name', 'DESC')->paginate(10);
+        return response()->json([
+            'success' => true,
+            'message' =>'List Semua Comment',
+            'data'    => $comments
+        ], 200);
     }
 }

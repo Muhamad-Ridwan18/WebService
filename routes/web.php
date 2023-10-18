@@ -1,11 +1,7 @@
 <?php
+/** @var \Laravel\Lumen\Routing\Router $router /
 
-// use Illuminate\Support\Facades\Route;
-
-
-// $router->get('/', function () use ($router) {
-//     return $router->app->version();
-// });
+*/
 
 $router->get('/hello-lumen', function () {
     return "<h1>Hello Lumen</h1><p>Hi Developer</P>";
@@ -44,19 +40,18 @@ $router->get('/article', 'ArticleController@index');
 
 
 $router->get('/', 'UserController@getStatus');
-$router->get('/users', 'UserController@index');
 $router->get('/users/{userId}', 'UserController@show');
-$router->get('/categories', [App\Http\Controllers\CategoryController::class, 'index']);
-$router->get('/users', [App\Http\Controllers\UserController::class, 'index']);
-$router->get('/tags', [App\Http\Controllers\TagController::class, 'index']);
-$router->get('/comments', [App\Http\Controllers\CommentController::class, 'index']);
+$router->get('/categories', 'CategoryController@index');
+$router->get('/users', 'UserController@index');
+$router->get('/tags', 'TagController@index');
+$router->get('/comments', 'CommentController@index');
 
 // Route for PostController
-$router->get('/posts', [App\Http\Controllers\PostController::class, 'index']);
-$router->get('/posts/{id}', [App\Http\Controllers\PostController::class, 'show']);
-$router->post('/posts', [App\Http\Controllers\PostController::class, 'store']);
-$router->put('/posts/{id}', [App\Http\Controllers\PostController::class, 'update']);
-$router->delete('/posts/{id}', [App\Http\Controllers\PostController::class, 'destroy']);
+$router->get('/posts', 'PostController@index');
+$router->get('/posts/{id}', 'PostController@show');
+$router->post('/posts', 'PostController@store');
+$router->put('/posts/{id}', 'PostController@update');
+$router->delete('/posts/{id}', 'PostController@destroy');
 
 
 

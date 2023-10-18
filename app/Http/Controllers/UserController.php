@@ -17,8 +17,12 @@ class UserController extends Controller
     }
     
     public function index(){
-        $users = User::all();
-        return response()->json($users);
+        $users = User::orderBy('name', 'DESC')->paginate(10);
+        return response()->json([
+            'success' => true,
+            'message' =>'List Semua User',
+            'data'    => $users
+        ], 200);
     }
     
 
