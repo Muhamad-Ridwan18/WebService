@@ -11,16 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('body');
             $table->string('user_id');
-            $table->string('post_id');
-            $table->integer('likes');
-            $table->boolean('approved');
-            $table->text('comment_data');
-            $table->timestamps(); 
+            $table->string('order_number');
+            $table->decimal('total_amount', 8, 2);
+            $table->boolean('is_paid');
+            $table->text('shipping_address');
+            $table->string('payment_method');
+            $table->timestamps();
         });
+        
     }
 
     /**
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::dropIfExists('orders');
     }
 };

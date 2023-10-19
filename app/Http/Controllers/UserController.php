@@ -25,13 +25,85 @@ class UserController extends Controller
         ], 200);
     }
     
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'email' => 'required',
+            'role' => 'required',
+            'password' => 'required',
+            'phone_number' => 'required',
+            'alamat' => 'required',
+            'image' => 'required',
+        ]);
 
-    public function update($id){
-        return "Tampilan update pengguna dengan ID: $id";
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
+        }
+
+        $user = User::create($request->all());
+        return response()->json(['message' => 'User created successfully', 'data' => $user], 201);
+    }
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'email' => 'required',
+            'role' => 'required',
+            'password' => 'required',
+            'phone_number' => 'required',
+            'alamat' => 'required',
+            'image' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Semua Kolom Wajib Diisi!',
+                'data'   => $validator->errors()
+            ],401);
+    
+        } else {
+    
+            $user = User::whereId($id)->update([
+                'name'     => $request->input('name'),
+                'email'   => $request->input('email'),
+                'role'   => $request->input('role'),
+                'password'   => $request->input('password'),
+                'phone_number'   => $request->input('phone_number'),
+                'alamat'   => $request->input('alamat'),
+                'image'   => $request->input('image'),
+            ]);
+    
+            if ($user) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User Berhasil Diupdate!',
+                    'data' => $user
+                ], 201);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Post Gagal Diupdate!',
+                ], 400);
+            }
+    
+        }
     }
 
-    public function destroy($id){
-        return "Tampilan delete pengguna dengan ID: $id";
+    public function destroy($id)
+    {
+        $user = User::whereId($id)->first();
+		
+        $user->delete();
+
+            if ($post) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User Berhasil Dihapus!',
+                ], 200);
+            }
     }
 
 }

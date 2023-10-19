@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
+        Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('content');
-            $table->string('tags');
-            $table->string('author');
-            $table->integer('views');
-            $table->boolean('published');
-            $table->string('category');
-            $table->timestamps();           
+            $table->text('description');
+            $table->dateTime('due_date');
+            $table->boolean('completed');
+            $table->string('assigned_to');
+            $table->string('priority');
+            $table->timestamps(); // Kolom created_at dan updated_at
         });
     }
 
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('posts');
+        Schema::dropIfExists('tasks');
     }
 };
