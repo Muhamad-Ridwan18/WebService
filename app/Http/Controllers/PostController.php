@@ -14,15 +14,31 @@ class PostController extends Controller
         return response()->json(['message' => 'Success', 'data' => $posts]);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $post = Post::find($id);
 
         if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
+            $response = ['message' => 'Post not found'];
+            $format = $request->header('Accept');
+
+            if ($format === 'application/xml') {
+                $response = $this->arrayToXml($response);
+                return response($response, 404)->header('Content-Type', 'application/xml');
+            }
+
+            return response()->json($response, 404);
         }
 
-        return response()->json(['message' => 'Success', 'data' => $post]);
+        $response = ['message' => 'Success', 'data' => $post];
+
+        $format = $request->header('Accept');
+        if ($format === 'application/xml') {
+            $response = $this->arrayToXml($response);
+            return response($response, 200)->header('Content-Type', 'application/xml');
+        }
+
+        return response()->json($response, 200);
     }
 
     public function store(Request $request)
@@ -38,22 +54,70 @@ class PostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
+            $response = ['message' => 'Validation error', 'errors' => $validator->errors()];
+
+            $format = $request->header('Accept');
+            if ($format === 'application/xml') {
+                $response = $this->arrayToXml($response);
+                return response($response, 400)->header('Content-Type', 'application/xml');
+            }
+
+            return response()->json($response, 400);
         }
 
         $post = Post::create($request->all());
-        return response()->json(['message' => 'Post created successfully', 'data' => $post], 201);
+
+        $response = ['message' => 'Post created successfully', 'data' => $post];
+
+        $format = $request->header('Accept');
+        if ($format === 'application/xml') {
+            $response = $this->arrayToXml($response);
+            return response($response, 201)->header('Content-Type', 'application/xml');
+        }
+
+        return response()->json($response, 201);
     }
 
+    
     public function update(Request $request, $id)
     {
         $post = Post::find($id);
 
         if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
+            $response = ['message' => 'Post not found'];
+            $format = $request->header('Accept');
+
+            if ($format === 'application/xml') {
+                $response = $this->arrayToXml($response);
+                return response($response, 404)->header('Content-Type', 'application/xml');
+            }
+
+            return response()->json($response, 404);
         }
 
-        $validator = Validator::make($request->all(), [
+        // Periksa "Content-Type" header
+        $contentType = $request->header('Content-Type');
+
+        if ($contentType === 'application/json') {
+            $data = $request->json()->all();
+        } elseif ($contentType === 'application/xml') {
+            // Mengambil data dalam format XML dan mengonversinya menjadi array
+            $xmlData = simplexml_load_string($request->getContent());
+            $jsonData = json_encode($xmlData);
+            $data = json_decode($jsonData, true);
+        } else {
+            $response = ['message' => 'Unsupported Content-Type'];
+            $format = $request->header('Accept');
+
+            if ($format === 'application/xml') {
+                $response = $this->arrayToXml($response);
+                return response($response, 400)->header('Content-Type', 'application/xml');
+            }
+
+            return response()->json($response, 400);
+        }
+
+        $validator = Validator::make($data, [
             'title' => 'required|max:255',
             'content' => 'required',
             'author' => 'required',
@@ -64,25 +128,76 @@ class PostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
+            $response = ['message' => 'Validation error', 'errors' => $validator->errors()];
+            $format = $request->header('Accept');
+
+            if ($format === 'application/xml') {
+                $response = $this->arrayToXml($response);
+                return response($response, 400)->header('Content-Type', 'application/xml');
+            }
+
+            return response()->json($response, 400);
         }
 
-        $post->update($request->all());
+        $post->update($data);
 
-        return response()->json(['message' => 'Post updated successfully', 'data' => $post], 200);
+        $response = ['message' => 'Post updated successfully', 'data' => $post];
+
+        $format = $request->header('Accept');
+
+        if ($format === 'application/xml') {
+            $response = $this->arrayToXml($response);
+            return response($response, 200)->header('Content-Type', 'application/xml');
+        }
+
+        return response()->json($response, 200);
     }
 
 
-    public function destroy($id)
+
+    public function destroy(Request $request, $id)
     {
         $post = Post::find($id);
 
         if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
+            $response = ['message' => 'Post not found'];
+            $format = $request->header('Accept');
+
+            if ($format === 'application/xml') {
+                $response = $this->arrayToXml($response);
+                return response($response, 404)->header('Content-Type', 'application/xml');
+            }
+
+            return response()->json($response, 404);
         }
 
         $post->delete();
 
-        return response()->json(['message' => 'Post deleted successfully'], 200);
+        $response = ['message' => 'Post deleted successfully'];
+
+        $format = $request->header('Accept');
+        if ($format === 'application/xml') {
+            $response = $this->arrayToXml($response);
+            return response($response, 200)->header('Content-Type', 'application/xml');
+        }
+
+        return response()->json($response, 200);
+    }
+
+    private function arrayToXml($data, $rootNodeName = 'response', $xml = null)
+    {
+        if ($xml === null) {
+            $xml = new \SimpleXMLElement("<$rootNodeName/>");
+        }
+
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $this->arrayToXml($value, $key, $xml->addChild($key));
+            } else {
+                $xml->addChild($key, $value);
+            }
+        }
+
+        return $xml->asXML();
     }
 }
